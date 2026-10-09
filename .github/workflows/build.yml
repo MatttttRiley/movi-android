@@ -1,0 +1,39 @@
+name: Build Movi Android APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract source
+        run: |
+          mkdir -p src
+          unzip -q movi-source.zip -d src
+          ls src/
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build APK
+        run: dotnet publish Movi/Movi.Android/Movi.Android.csproj -c Release -f net8.0-android -o ./publish
+        working-directory: src
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Movi-Android-APK
+          path: src/publish/*.apk
